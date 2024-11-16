@@ -422,6 +422,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ">=3.9 <=3.12"
+      - name: cd 
+        run: cd python
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -451,6 +453,8 @@ jobs:
         with:
           python-version: ">=3.9 <=3.12"
           architecture: ${{ matrix.platform.target }}
+      - name: cd 
+        run: cd python
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -478,6 +482,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ">=3.9 <=3.12"
+      - name: cd 
+        run: cd python
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -495,6 +501,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: cd 
+        run: cd python
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
