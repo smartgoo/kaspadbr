@@ -199,8 +199,8 @@ jobs:
           asset_name: "${{ env.asset_name }}"
           asset_content_type: application/zip
 
-  # python-sdk-linux:
-  #   name: Build Python SDK Wheel - Linux
+  # build-python-linux:
+  #   name: Building Python SDK - Linux
   #   runs-on: ${{ matrix.platform.runner }}
   #   strategy:
   #     matrix:
@@ -236,8 +236,8 @@ jobs:
   #         name: wheels-linux-${{ matrix.platform.target }}
   #         path: python/dist
 
-  # python-sdk-windows:
-  #   name: Build Python SDK Wheel - Windows
+  # build-python-windows:
+  #   name: Building Python SDK - Windows
   #   runs-on: ${{ matrix.platform.runner }}
   #   strategy:
   #     matrix:
@@ -265,8 +265,8 @@ jobs:
   #         name: wheels-windows-${{ matrix.platform.target }}
   #         path: python/dist
 
-  python-sdk-macos:
-    name: Build Python SDK Wheel - MacOS
+  build-python-macos:
+    name: Building Python SDK - MacOS
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -289,7 +289,7 @@ jobs:
           sccache: 'true'
       - name: Tar and gzip sdist and wheels
         run: |
-          cd python/dist
+          cd python/${{ matrix.platform.target }}
           zip -r kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
@@ -306,7 +306,7 @@ jobs:
       #     name: kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}
       #     path: python/dist/kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.tar.gz
 
-  # python-sdk-sdist:
+  # build-python-sdist:
   #   name: Build Python SDK sdist
   #   runs-on: ubuntu-latest
   #   steps:
