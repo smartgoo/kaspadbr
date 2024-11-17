@@ -199,71 +199,71 @@ jobs:
           asset_name: "${{ env.asset_name }}"
           asset_content_type: application/zip
 
-  python-sdk-linux:
-    name: Build Python SDK Wheel - Linux
-    runs-on: ${{ matrix.platform.runner }}
-    strategy:
-      matrix:
-        platform:
-          - runner: ubuntu-latest
-            target: x86_64
-          - runner: ubuntu-latest
-            target: x86
-          - runner: ubuntu-latest
-            target: aarch64
-          - runner: ubuntu-latest
-            target: armv7
-          - runner: ubuntu-latest
-            target: s390x
-          - runner: ubuntu-latest
-            target: ppc64le
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ">=3.9 <=3.12"
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          working-directory: python
-          target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
-          sccache: 'true'
-          manylinux: auto
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-linux-${{ matrix.platform.target }}
-          path: python/dist
+  # python-sdk-linux:
+  #   name: Build Python SDK Wheel - Linux
+  #   runs-on: ${{ matrix.platform.runner }}
+  #   strategy:
+  #     matrix:
+  #       platform:
+  #         - runner: ubuntu-latest
+  #           target: x86_64
+  #         - runner: ubuntu-latest
+  #           target: x86
+  #         - runner: ubuntu-latest
+  #           target: aarch64
+  #         - runner: ubuntu-latest
+  #           target: armv7
+  #         - runner: ubuntu-latest
+  #           target: s390x
+  #         - runner: ubuntu-latest
+  #           target: ppc64le
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: ">=3.9 <=3.12"
+  #     - name: Build wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         working-directory: python
+  #         target: ${{ matrix.platform.target }}
+  #         args: --release --out dist --find-interpreter
+  #         sccache: 'true'
+  #         manylinux: auto
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-linux-${{ matrix.platform.target }}
+  #         path: python/dist
 
-  python-sdk-windows:
-    name: Build Python SDK Wheel - Windows
-    runs-on: ${{ matrix.platform.runner }}
-    strategy:
-      matrix:
-        platform:
-          - runner: windows-latest
-            target: x64
-          - runner: windows-latest
-            target: x86
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ">=3.9 <=3.12"
-          architecture: ${{ matrix.platform.target }}
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          working-directory: python
-          target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
-          sccache: 'true'
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-windows-${{ matrix.platform.target }}
-          path: python/dist
+  # python-sdk-windows:
+  #   name: Build Python SDK Wheel - Windows
+  #   runs-on: ${{ matrix.platform.runner }}
+  #   strategy:
+  #     matrix:
+  #       platform:
+  #         - runner: windows-latest
+  #           target: x64
+  #         - runner: windows-latest
+  #           target: x86
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: ">=3.9 <=3.12"
+  #         architecture: ${{ matrix.platform.target }}
+  #     - name: Build wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         working-directory: python
+  #         target: ${{ matrix.platform.target }}
+  #         args: --release --out dist --find-interpreter
+  #         sccache: 'true'
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-windows-${{ matrix.platform.target }}
+  #         path: python/dist
 
   python-sdk-macos:
     name: Build Python SDK Wheel - MacOS
@@ -285,39 +285,43 @@ jobs:
         with:
           working-directory: python
           target: ${{ matrix.platform.target }}
-          args: --release --sdist --out dist --find-interpreter
+          args: --release --sdist --out ${{ matrix.platform.target }}/dist --find-interpreter
           sccache: 'true'
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-macos-${{ matrix.platform.target }}
-          path: python/dist
       - name: Tar and gzip sdist and wheels
         run: |
           cd python/dist
-          tar -czf kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.tar.gz *
-      - name: Upload tar.gz artifact
-        uses: actions/upload-artifact@v4
+          zip -r kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}
-          path: python/dist/kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.tar.gz
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: "./${{ env.archive }}"
+          asset_name: "${{ env.asset_name }}"
+          asset_content_type: application/zip
+      # - name: Upload tar.gz artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}
+      #     path: python/dist/kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.tar.gz
 
-  python-sdk-sdist:
-    name: Build Python SDK sdist
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build sdist
-        uses: PyO3/maturin-action@v1
-        with:
-          working-directory: python
-          command: sdist
-          args: --out dist
-      - name: Upload sdist
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-sdist
-          path: python/dist
+  # python-sdk-sdist:
+  #   name: Build Python SDK sdist
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Build sdist
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         working-directory: python
+  #         command: sdist
+  #         args: --out dist
+  #     - name: Upload sdist
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-sdist
+  #         path: python/dist
 
   # python-sdk-release:
   #   name: Python SDK Release
