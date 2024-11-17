@@ -289,8 +289,8 @@ jobs:
           sccache: 'true'
       - name: Tar and gzip sdist and wheels
         run: |
-          cd python/${{ matrix.platform.target }}
-          zip -r kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip
+          cd python/${{ matrix.platform.target }}/dist
+          zip -r kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip *
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
