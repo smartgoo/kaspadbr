@@ -284,7 +284,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           working-directory: python
-          target: target/${{ matrix.platform.target }}
+          target: ${{ matrix.platform.target }}
           args: --release --sdist --out target/${{ matrix.platform.target }}/dist --find-interpreter
           sccache: 'true'
       # - name: Tar and gzip sdist and wheels
