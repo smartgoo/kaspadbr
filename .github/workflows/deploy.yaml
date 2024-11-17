@@ -297,7 +297,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: "python/${{ matrix.platform.target }}/kaspa-python-sdk-${{ github.event.release.tag_name }}.zip"
+          asset_path: "python/target/${{ matrix.platform.target }}/kaspa-python-sdk-${{ github.event.release.tag_name }}.zip"
           asset_name: "kaspa-python-sdk-${{ github.event.release.tag_name }}.zip"
           asset_content_type: application/ziprelease upload "${{ github.event.release.tag_name }}" "$file"
             done
