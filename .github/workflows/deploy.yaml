@@ -299,8 +299,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: "./python/target/${{ matrix.platform.target }}/kaspa-python-sdk-${{ github.event.release.tag_name }}.zip"
-          asset_name: "kaspa-python-sdk-${{ github.event.release.tag_name }}.zip"
+          asset_path: "./python/target/${{ matrix.platform.target }}/kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip"
+          asset_name: "kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip.zip"
           asset_content_type: application/zip
       # - name: Upload tar.gz artifact
       #   uses: actions/upload-artifact@v4
