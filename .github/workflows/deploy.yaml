@@ -287,10 +287,12 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --out target/${{ matrix.platform.target }}/dist --find-interpreter
           sccache: 'true'
-      - name: Package all wheels and sdist
+      - name: Package wheels
         run: |
           cd python/target/${{ matrix.platform.target }}
-          zip -r kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip dist/*
+          ZIP_NAME="kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
+          mv dist "$ZIP_NAME"
+          zip -r "${ZIP_NAME}.zip" "$ZIP_NAME"
           pwd
           ls -lah
       - name: Upload release asset
@@ -300,7 +302,7 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: "./python/target/${{ matrix.platform.target }}/kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip"
-          asset_name: "kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip.zip"
+          asset_name: "kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip"
           asset_content_type: application/zip
       # - name: Upload tar.gz artifact
       #   uses: actions/upload-artifact@v4
