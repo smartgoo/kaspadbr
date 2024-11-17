@@ -284,8 +284,8 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           working-directory: python
-          target: ${{ matrix.platform.target }}
-          args: --release --sdist --out ${{ matrix.platform.target }}/dist --find-interpreter
+          target: target/${{ matrix.platform.target }}
+          args: --release --sdist --out target/${{ matrix.platform.target }}/dist --find-interpreter
           sccache: 'true'
       # - name: Tar and gzip sdist and wheels
       #   run: |
@@ -306,7 +306,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: "python/dist/${{ matrix.platform.target }}"
+          asset_path: "python/target/${{ matrix.platform.target }}/dist"
           asset_name: "kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip"
           asset_content_type: application/zip
       # - name: Upload tar.gz artifact
