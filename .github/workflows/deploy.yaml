@@ -234,7 +234,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-linux-${{ matrix.platform.target }}
-          path: dist
+          path: python/dist
 
   python-sdk-windows:
     name: Build Python SDK Wheel - Windows
@@ -263,7 +263,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-windows-${{ matrix.platform.target }}
-          path: dist
+          path: python/dist
 
   python-sdk-macos:
     name: Build Python SDK Wheel - MacOS
@@ -291,7 +291,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-macos-${{ matrix.platform.target }}
-          path: dist
+          path: python/dist
 
   python-sdk-sdist:
     name: Build Python SDK sdist
@@ -308,7 +308,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-sdist
-          path: dist
+          path: python/dist
 
   # python-sdk-release:
   #   name: Python SDK Release
