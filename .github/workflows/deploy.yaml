@@ -236,34 +236,51 @@ jobs:
   #         name: wheels-linux-${{ matrix.platform.target }}
   #         path: python/dist
 
-  # build-python-windows:
-  #   name: Building Python SDK - Windows
-  #   runs-on: ${{ matrix.platform.runner }}
-  #   strategy:
-  #     matrix:
-  #       platform:
-  #         - runner: windows-latest
-  #           target: x64
-  #         - runner: windows-latest
-  #           target: x86
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: ">=3.9 <=3.12"
-  #         architecture: ${{ matrix.platform.target }}
-  #     - name: Build wheels
-  #       uses: PyO3/maturin-action@v1
-  #       with:
-  #         working-directory: python
-  #         target: ${{ matrix.platform.target }}
-  #         args: --release --out dist --find-interpreter
-  #         sccache: 'true'
-  #     - name: Upload wheels
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: wheels-windows-${{ matrix.platform.target }}
-  #         path: python/dist
+  build-python-windows:
+    name: Building Python SDK - Windows
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: windows-latest
+            target: x64
+          - runner: windows-latest
+            target: x86
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ">=3.9 <=3.12"
+          architecture: ${{ matrix.platform.target }}
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          working-directory: python
+          target: ${{ matrix.platform.target }}
+          args: --release --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
+          sccache: 'true'
+      - name: Zip wheels
+        run: |
+          $ZIP_NAME = "kaspa-python-sdk-windows-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
+          
+          cd python/target/${{ matrix.platform.target }}
+          Rename-Item -Path "dist" -NewName "$ZIP_NAME"
+          Compress-Archive -Path "$ZIP_NAME" -DestinationPath "${ZIP_NAME}.zip"
+          
+          Write-Host "Current Directory: $(Get-Location)"
+          Get-ChildItem -Path "." -Recurse -Force | Format-List
+
+          echo "archive=$ZIP_NAME" >> $env:GITHUB_ENV
+        shell: pwsh
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: "./python/target/${{ matrix.platform.target }}/${{ env.archive }}.zip"
+          asset_name: "${{ env.archive }}.zip"
+          asset_content_type: application/zip
 
   build-python-macos:
     name: Building Python SDK - MacOS
@@ -287,10 +304,11 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
           sccache: 'true'
-      - name: Package wheels
+      - name: Zip wheels
         run: |
+          ZIP_NAME="kaspa-python-sdk-macos-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
+
           cd python/target/${{ matrix.platform.target }}
-          ZIP_NAME="kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
           mv dist "$ZIP_NAME"
           zip -r "${ZIP_NAME}.zip" "$ZIP_NAME"
   
@@ -304,14 +322,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: "./python/target/${{ matrix.platform.target }}/kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip"
-          asset_name: "kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.zip"
+          asset_path: "./python/target/${{ matrix.platform.target }}/${{ env.archive }}.zip"
+          asset_name: "${{ env.archive }}.zip"
           asset_content_type: application/zip
-      # - name: Upload tar.gz artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}
-      #     path: python/dist/kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}.tar.gz
 
   # build-python-sdist:
   #   name: Build Python SDK sdist
