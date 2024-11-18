@@ -207,10 +207,10 @@ jobs:
         platform:
           - runner: ubuntu-latest
             target: x86_64
+            manylinux: auto
           - runner: ubuntu-latest
             target: aarch64
-          - runner: ubuntu-latest
-            target: armv7
+            manylinux: manylinux_2_28
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -221,7 +221,7 @@ jobs:
         run: |
           sudo apt-get update
           if [ "${{ matrix.platform.target }}" == "aarch64" ]; then
-            sudo apt-get install -y gcc-aarch64-linux-gnu
+            sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
           elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
             sudo apt-get install -y gcc-arm-linux-gnueabihf
           fi
@@ -240,7 +240,7 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --strip --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
           sccache: 'true'
-          manylinux: manylinux_2_28
+          manylinux: ${{ matrix.platform.manylinux }}
       - name: Zip wheels
         run: |
           ZIP_NAME="kaspa-python-sdk-macos-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
