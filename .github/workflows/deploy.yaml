@@ -222,9 +222,7 @@ jobs:
         if: ${{ matrix.platform.target != 'x86_64' }}
         run: |
           sudo apt-get update
-          if [ "${{ matrix.platform.target }}" == "x86" ]; then
-            sudo apt-get install -y gcc-multilib
-          elif [ "${{ matrix.platform.target }}" == "aarch64" ]; then
+          if [ "${{ matrix.platform.target }}" == "aarch64" ]; then
             sudo apt-get install -y gcc-aarch64-linux-gnu
           elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
             sudo apt-get install -y gcc-arm-linux-gnueabihf
@@ -232,9 +230,7 @@ jobs:
       - name: Set CC environment variable
         if: ${{ matrix.platform.target != 'x86_64' }}
         run: |
-          if [ "${{ matrix.platform.target }}" == "x86" ]; then
-            echo 'CC="gcc -m32"' >> $GITHUB_ENV
-          elif [ "${{ matrix.platform.target }}" == "aarch64" ]; then
+          if [ "${{ matrix.platform.target }}" == "aarch64" ]; then
             echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
           elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
             echo "CC=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
