@@ -213,22 +213,39 @@ jobs:
             target: aarch64
           - runner: ubuntu-latest
             target: armv7
-          - runner: ubuntu-latest
-            target: s390x
-          - runner: ubuntu-latest
-            target: ppc64le
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ">=3.9 <=3.12"
+      - name: Install cross-compilation tools
+        if: ${{ matrix.platform.target != 'x86_64' }}
+        run: |
+          sudo apt-get update
+          if [ "${{ matrix.platform.target }}" == "x86" ]; then
+            sudo apt-get install -y gcc-i686-linux-gnu
+          elif [ "${{ matrix.platform.target }}" == "aarch64" ]; then
+            sudo apt-get install -y gcc-aarch64-linux-gnu
+          elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
+            sudo apt-get install -y gcc-arm-linux-gnueabihf
+          fi
+      - name: Set CC environment variable
+        if: ${{ matrix.platform.target != 'x86_64' }}
+        run: |
+          if [ "${{ matrix.platform.target }}" == "x86" ]; then
+            echo "CC=i686-linux-gnu-gcc" >> $GITHUB_ENV
+          elif [ "${{ matrix.platform.target }}" == "aarch64" ]; then
+            echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
+            echo "CC=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
+          fi
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           working-directory: python
           target: ${{ matrix.platform.target }}
           args: --release --strip --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
-          # sccache: 'true'
+          sccache: 'true'
           manylinux: auto
       - name: Zip wheels
         run: |
