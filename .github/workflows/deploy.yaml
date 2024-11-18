@@ -228,7 +228,7 @@ jobs:
           working-directory: python
           target: ${{ matrix.platform.target }}
           args: --release --strip --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
-          sccache: 'true'
+          # sccache: 'true'
           manylinux: auto
       - name: Zip wheels
         run: |
