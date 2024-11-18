@@ -240,7 +240,7 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --strip --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
           sccache: 'true'
-          manylinux: manylinux_2_24
+          manylinux: manylinux_2_28
       - name: Zip wheels
         run: |
           ZIP_NAME="kaspa-python-sdk-macos-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
