@@ -412,7 +412,7 @@ jobs:
       - name: Create single zip with OS/Architecture structure
         run: |
           cd combined_artifacts
-          sudo zip -r ../kaspa-python-sdk-${{ github.event.release.tag_name }}.zip .
+          sudo zip -r ../kaspa-python-sdk.zip .
           cd ..
       - name: Upload consolidated release asset
         uses: actions/upload-release-asset@v1
@@ -421,7 +421,7 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./kaspa-python-sdk-${{ github.event.release.tag_name }}.zip
-          asset_name: "kaspa-python-sdk-${{ github.event.release.tag_name }}.zip"
+          asset_name: "kaspa-python-sdk.zip"
           asset_content_type: application/zip
 
   # build-python-sdist:
