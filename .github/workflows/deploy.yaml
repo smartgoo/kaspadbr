@@ -377,48 +377,30 @@ jobs:
           args: --release --strip --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
           sccache: 'true'
           manylinux: ${{ matrix.platform.manylinux || '' }}
-      # - name: Zip wheels (Linux/macOS)
+      # - name: Move wheels to artifacts directory (MacOS, Linux)
       #   if: runner.os != 'Windows'
-      #   shell: bash
       #   run: |
-      #     ZIP_NAME="kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
-      #     cd python/target/${{ matrix.platform.target }}
-      #     sudo mv dist "$ZIP_NAME"
-      #     sudo zip -r "${ZIP_NAME}.zip" "$ZIP_NAME"
-      #     pwd
-      #     ls -lah
-      #     echo "archive=${ZIP_NAME}" >> $GITHUB_ENV
-      # - name: Zip wheels (Windows)
+      #     sudo mkdir -p artifacts
+      #     sudo mv python/target/${{ matrix.platform.target }}/dist/* artifacts/
+      # - name: Move wheels to artifacts directory (Windows)
       #   if: runner.os == 'Windows'
       #   shell: pwsh
       #   run: |
-      #     $ZIP_NAME = "kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
-      #     cd python/target/${{ matrix.platform.target }}
-      #     Rename-Item dist $ZIP_NAME
-      #     Compress-Archive -Path $ZIP_NAME -DestinationPath "$ZIP_NAME.zip"
-      #     pwd
-      #     Get-ChildItem -Recurse
-      #     echo "archive=$ZIP_NAME" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      # - name: Upload release asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ github.event.release.upload_url }}
-      #     asset_path: "./python/target/${{ matrix.platform.target }}/${{ env.archive }}.zip"
-      #     asset_name: "${{ env.archive }}.zip"
-      #     asset_content_type: application/zip
+      #     mkdir artifacts
+      #     Move-Item -Path "python/target/${{ matrix.platform.target }}/dist/*" -Destination artifacts -Force
       - name: Move wheels to artifacts directory (MacOS, Linux)
         if: runner.os != 'Windows'
         run: |
-          sudo mkdir -p artifacts
-          sudo mv python/target/${{ matrix.platform.target }}/dist/* artifacts/
+          OS_DIR="artifacts/${{ runner.os }}"
+          sudo mkdir -p "$OS_DIR"
+          sudo mv python/target/${{ matrix.platform.target }}/dist/* "$OS_DIR/"
       - name: Move wheels to artifacts directory (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          mkdir artifacts
-          Move-Item -Path "python/target/${{ matrix.platform.target }}/dist/*" -Destination artifacts -Force
+          $OS_DIR = "artifacts/$env:RUNNER_OS"
+          mkdir $OS_DIR
+          Move-Item -Path "python/target/${{ matrix.platform.target }}/dist/*" -Destination "$OS_DIR" -Force
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -434,10 +416,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: all_artifacts
-      - name: Create single zip of artifacts
+      - name: Organize artifacts into OS-specific directories
         run: |
           sudo mkdir -p combined_artifacts
-          sudo find all_artifacts -type f -exec mv {} combined_artifacts/ \;
+          sudo mv all_artifacts/* combined_artifacts/
+      - name: Create single zip with OS-specific directories
+        run: |
           cd combined_artifacts
           sudo zip -r ../kaspa-python-sdk-${{ github.event.release.tag_name }}.zip .
           cd ..
