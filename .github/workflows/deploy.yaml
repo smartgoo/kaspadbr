@@ -199,134 +199,6 @@ jobs:
           asset_name: "${{ env.asset_name }}"
           asset_content_type: application/zip
 
-  # build-python-linux:
-  #   name: Building Python SDK - Linux
-  #   runs-on: ${{ matrix.platform.runner }}
-  #   strategy:
-  #     matrix:
-  #       platform:
-  #         - runner: ubuntu-latest
-  #           target: x86_64
-  #           manylinux: auto
-  #         - runner: ubuntu-latest
-  #           target: aarch64
-  #           manylinux: manylinux_2_28
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: ">=3.9 <=3.12"
-  #     - name: Install cross-compilation tools
-  #       if: ${{ matrix.platform.target != 'x86_64' }}
-  #       run: |
-  #         sudo apt-get update
-  #         if [ "${{ matrix.platform.target }}" == "aarch64" ]; then
-  #           sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-  #         elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
-  #           sudo apt-get install -y gcc-arm-linux-gnueabihf
-  #         fi
-  #     - name: Set CC environment variable
-  #       if: ${{ matrix.platform.target != 'x86_64' }}
-  #       run: |
-  #         if [ "${{ matrix.platform.target }}" == "aarch64" ]; then
-  #           echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-  #         elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
-  #           echo "CC=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
-  #         fi
-  #     - name: Build wheels
-  #       uses: PyO3/maturin-action@v1
-  #       with:
-  #         working-directory: python
-  #         target: ${{ matrix.platform.target }}
-  #         args: --release --strip --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
-  #         sccache: 'true'
-  #         manylinux: ${{ matrix.platform.manylinux }}
-  #     - name: Zip wheels
-  #       run: |
-  #         ZIP_NAME="kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
-
-  #         cd python/target/${{ matrix.platform.target }}
-  #         sudo mv dist "$ZIP_NAME"
-  #         sudo zip -r "${ZIP_NAME}.zip" "$ZIP_NAME"
-  
-  #         pwd
-  #         ls -lah
-
-  #         echo "archive=${ZIP_NAME}" >> $GITHUB_ENV
-  #     - name: Upload release asset
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ github.event.release.upload_url }}
-  #         asset_path: "./python/target/${{ matrix.platform.target }}/${{ env.archive }}.zip"
-  #         asset_name: "${{ env.archive }}.zip"
-  #         asset_content_type: application/zip
-
-  # build-python:
-  #   name: Building Python SDK
-  #   runs-on: ${{ matrix.platform.runner }}
-  #   strategy:
-  #     matrix:
-  #       platform:
-  #         - runner: macos-latest
-  #           target: x86_64-apple-darwin
-  #         - runner: macos-latest
-  #           target: aarch64-apple-darwin
-  #         - runner: windows-latest
-  #           target: x64
-  #         - runner: windows-latest
-  #           target: x86
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: ">=3.9 <=3.12"
-  #     - name: Build wheels
-  #       uses: PyO3/maturin-action@v1
-  #       with:
-  #         working-directory: python
-  #         target: ${{ matrix.platform.target }}
-  #         args: --release --strip --out target/${{ matrix.platform.target }}/dist --find-interpreter --features py-sdk
-  #         sccache: 'true'
-  #     - name: Zip wheels (macOS)
-  #       if: runner.os == 'macOS'
-  #       shell: bash
-  #       run: |
-  #         ZIP_NAME="kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
-  #         cd python/target/${{ matrix.platform.target }}
-          
-  #         sudo mv dist "$ZIP_NAME"
-  #         sudo zip -r "${ZIP_NAME}.zip" "$ZIP_NAME"
-          
-  #         pwd
-  #         ls -lah
-          
-  #         echo "archive=${ZIP_NAME}" >> $GITHUB_ENV
-  #     - name: Zip wheels (Windows)
-  #       if: runner.os == 'Windows'
-  #       shell: pwsh
-  #       run: |
-  #         $ZIP_NAME = "kaspa-python-sdk-${{ matrix.platform.target }}-${{ github.event.release.tag_name }}"
-  #         cd python/target/${{ matrix.platform.target }}
-          
-  #         Rename-Item dist $ZIP_NAME
-          
-  #         Compress-Archive -Path $ZIP_NAME -DestinationPath "$ZIP_NAME.zip"
-  #         pwd
-  #         Get-ChildItem -Recurse
-          
-  #         echo "archive=$ZIP_NAME" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-  #     - name: Upload release asset
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ github.event.release.upload_url }}
-  #         asset_path: "./python/target/${{ matrix.platform.target }}/${{ env.archive }}.zip"
-  #         asset_name: "${{ env.archive }}.zip"
-  #         asset_content_type: application/zip
-
   build-python-sdk:
     name: Building Python SDK
     runs-on: ${{ matrix.platform.runner }}
@@ -349,26 +221,23 @@ jobs:
             target: x86
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '>=3.10 <3.13'
+      
       - name: Install cross-compilation tools (Linux only)
-        if: startsWith(matrix.platform.runner, 'ubuntu') && matrix.platform.target != 'x86_64'
+        if: runner.os == 'Linux' && matrix.platform.target != 'x86_64'
         run: |
           sudo apt-get update
           if [ "${{ matrix.platform.target }}" == "aarch64" ]; then
             sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-          elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
-            sudo apt-get install -y gcc-arm-linux-gnueabihf
-          fi
-      - name: Set CC environment variable (Linux only)
-        if: startsWith(matrix.platform.runner, 'ubuntu') && matrix.platform.target != 'x86_64'
-        run: |
-          if [ "${{ matrix.platform.target }}" == "aarch64" ]; then
             echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
           elif [ "${{ matrix.platform.target }}" == "armv7" ]; then
+            sudo apt-get install -y gcc-arm-linux-gnueabihf
             echo "CC=arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
           fi
+      
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -377,24 +246,27 @@ jobs:
           args: --release --strip --out target/${{ matrix.platform.target }}/dist --features py-sdk --interpreter python3.10 python3.11 python3.12
           sccache: 'true'
           manylinux: ${{ matrix.platform.manylinux || '' }}
-      - name: Move wheels to artifacts directory (MacOS, Linux)
-        if: runner.os != 'Windows'
-        run: |
-          OS_ARCH_DIR="artifacts"
-          sudo mkdir -p "$OS_ARCH_DIR"
-          sudo mv python/target/${{ matrix.platform.target }}/dist/* "$OS_ARCH_DIR/"
-      - name: Move wheels to artifacts directory (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $OS_ARCH_DIR = "artifacts"
-          mkdir -p $OS_ARCH_DIR
-          Move-Item -Path "python/target/${{ matrix.platform.target }}/dist/*" -Destination "$OS_ARCH_DIR" -Force
-      - name: Upload artifact
+      
+      # - name: Move wheels to artifacts directory (MacOS, Linux)
+      #   if: runner.os != 'Windows'
+      #   run: |
+      #     OS_ARCH_DIR="artifacts"
+      #     sudo mkdir -p "$OS_ARCH_DIR"
+      #     sudo mv python/target/dist/* "$OS_ARCH_DIR/"
+      
+      # - name: Move wheels to artifacts directory (Windows)
+      #   if: runner.os == 'Windows'
+      #   shell: pwsh
+      #   run: |
+      #     $OS_ARCH_DIR = "artifacts"
+      #     mkdir -p $OS_ARCH_DIR
+      #     Move-Item -Path "python/target/dist/*" -Destination "$OS_ARCH_DIR" -Force
+      
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-${{ matrix.platform.target }}
-          path: artifacts
+          path: python/target/dist/
 
   collect-python-sdk-artifacts:
     name: Collect Python SDK Artifacts
@@ -404,14 +276,14 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: all_artifacts
-      - name: Organize artifacts into OS/Architecture directories
+          path: artifacts
+      # - name: Organize artifacts into OS/Architecture directories
+      #   run: |
+      #     sudo mkdir -p combined_artifacts
+      #     sudo mv all_artifacts/* combined_artifacts/
+      - name: Zip artifacts
         run: |
-          sudo mkdir -p combined_artifacts
-          sudo mv all_artifacts/* combined_artifacts/
-      - name: Create single zip with OS/Architecture structure
-        run: |
-          cd combined_artifacts
+          cd artifacts
           sudo zip -r ../kaspa-python-sdk.zip .
           cd ..
       - name: Upload consolidated release asset
