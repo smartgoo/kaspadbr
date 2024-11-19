@@ -404,7 +404,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: python-sdk-artifacts-${{ matrix.platform.target }}
+          name: ${{ runner.os }}-${{ matrix.platform.target }}
           path: artifacts
 
   collect-python-sdk-artifacts:
