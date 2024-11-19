@@ -210,6 +210,7 @@ jobs:
             manylinux: auto
           - runner: ubuntu-latest
             target: aarch64
+            # ring crate 0.17 fails to build for aarch64 using manylinux: auto, hence manylinux_2_28
             manylinux: manylinux_2_28
           - runner: macos-latest
             target: x86_64-apple-darwin
@@ -243,7 +244,7 @@ jobs:
         with:
           working-directory: python
           target: ${{ matrix.platform.target }}
-          args: --release --strip --out target/${{ matrix.platform.target }}/dist --features py-sdk --interpreter python3.10 python3.11 python3.12
+          args: --release --strip --out target/${{ matrix.platform.target }}/dist --features py-sdk --interpreter python3.12
           sccache: 'true'
           manylinux: ${{ matrix.platform.manylinux || '' }}
       
@@ -277,15 +278,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+      
       # - name: Organize artifacts into OS/Architecture directories
       #   run: |
       #     sudo mkdir -p combined_artifacts
       #     sudo mv all_artifacts/* combined_artifacts/
+      
       - name: Zip artifacts
         run: |
+          pwd
+          ls -l
           cd artifacts
           sudo zip -r ../kaspa-python-sdk.zip .
           cd ..
+      
       - name: Upload consolidated release asset
         uses: actions/upload-release-asset@v1
         env:
