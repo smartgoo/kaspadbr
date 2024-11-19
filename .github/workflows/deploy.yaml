@@ -408,10 +408,17 @@ jobs:
       #     asset_path: "./python/target/${{ matrix.platform.target }}/${{ env.archive }}.zip"
       #     asset_name: "${{ env.archive }}.zip"
       #     asset_content_type: application/zip
-      - name: Move wheels to artifacts directory
+      - name: Move wheels to artifacts directory (MacOS, Linux)
+        if: runner.os != 'Windows'
         run: |
           sudo mkdir -p artifacts
           sudo mv python/target/${{ matrix.platform.target }}/dist/* artifacts/
+      - name: Move wheels to artifacts directory (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          mkdir artifacts
+          Move-Item -Path "python/target/${{ matrix.platform.target }}/dist/*" -Destination artifacts -Force
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
