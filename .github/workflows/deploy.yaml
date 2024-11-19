@@ -244,7 +244,7 @@ jobs:
         with:
           working-directory: python
           target: ${{ matrix.platform.target }}
-          args: --release --strip --out target/${{ matrix.platform.target }}/dist --features py-sdk --interpreter python3.12
+          args: --release --strip --out target/dist --features py-sdk --interpreter python3.12
           sccache: 'true'
           manylinux: ${{ matrix.platform.manylinux || '' }}
       
