@@ -391,16 +391,16 @@ jobs:
       - name: Move wheels to artifacts directory (MacOS, Linux)
         if: runner.os != 'Windows'
         run: |
-          OS_DIR="artifacts/${{ runner.os }}"
-          sudo mkdir -p "$OS_DIR"
-          sudo mv python/target/${{ matrix.platform.target }}/dist/* "$OS_DIR/"
+          OS_ARCH_DIR="artifacts/${{ runner.os }}/${{ matrix.platform.target }}"
+          sudo mkdir -p "$OS_ARCH_DIR"
+          sudo mv python/target/${{ matrix.platform.target }}/dist/* "$OS_ARCH_DIR/"
       - name: Move wheels to artifacts directory (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $OS_DIR = "artifacts/$env:RUNNER_OS"
-          mkdir $OS_DIR
-          Move-Item -Path "python/target/${{ matrix.platform.target }}/dist/*" -Destination "$OS_DIR" -Force
+          $OS_ARCH_DIR = "artifacts/${{ runner.os }}/${{ matrix.platform.target }}"
+          mkdir -p $OS_ARCH_DIR
+          Move-Item -Path "python/target/${{ matrix.platform.target }}/dist/*" -Destination "$OS_ARCH_DIR" -Force
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -416,11 +416,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: all_artifacts
-      - name: Organize artifacts into OS-specific directories
+      - name: Organize artifacts into OS/Architecture directories
         run: |
           sudo mkdir -p combined_artifacts
           sudo mv all_artifacts/* combined_artifacts/
-      - name: Create single zip with OS-specific directories
+      - name: Create single zip with OS/Architecture structure
         run: |
           cd combined_artifacts
           sudo zip -r ../kaspa-python-sdk-${{ github.event.release.tag_name }}.zip .
